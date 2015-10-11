@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+import pygame
+import field
+import food
+import snake
+
+blockSize = 10 # size of blocks
+width = 20 # size of field width in blocks
+height = 20
+screenSize = (width * blockSize, height * blockSize)
+speed = 500 # milliseconds per step
+
+# Initialize pygame and open a window
+pygame.init()
+screen = pygame.display.set_mode(screenSize)
+
+# Create the field, the snake and a bit of food
+theField = field.Field(screen, width, height, blockSize)
+theFood = food.Food(theField)
+theSnake = snake.Snake(theField)
+
+pygame.time.set_timer(pygame.USEREVENT, speed)
+
+dx = 1
+dy = 0
+
+def updateScreen():
+    theField.draw()
+    theFood.draw()
+    theSnake.draw()
+    pygame.display.update()
+
+updateScreen()
+
+while True:
+    event = pygame.event.wait()
+
+    if event.type == pygame.QUIT: # window closed
+        pygame.quit()
+        sys.exit()
+
+    if event.type == pygame.USEREVENT: # timer elapsed
+        if not theSnake.move(dx, dy):
+            break
+
+        if theSnake.body[0] == (theFood.x, theFood.y):
+            theSnake.grow()
+            speed -= 5
+            theFood = food.Food(theField) # make a new piece of food
+
+        updateScreen()
+
+    if event.type == pygame.KEYDOWN: # key pressed
+        if event.key == pygame.K_LEFT:
+            dx = -1
+            dy = 0
+        elif event.key == pygame.K_RIGHT:
+            dx = 1
+            dy = 0
+        elif event.key == pygame.K_DOWN:
+            dx = 0
+            dy = 1
+        elif event.key == pygame.K_UP:
+            dx = 0
+            dy = -1
+
+# Game over!
+for i in range(0, 10):
+    theField.draw()
+    theFood.draw()
+    theSnake.draw(damage = (i % 2 == 0))
+    pygame.display.update()
+    pygame.time.wait(100)
